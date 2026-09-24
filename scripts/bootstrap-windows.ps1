@@ -35,6 +35,13 @@ $ErrorActionPreference = "Stop"
 $DefaultRepo = ""  # fill in once the config repo has a remote
 $ConfigDir = if ($env:XDG_CONFIG_HOME) { Join-Path $env:XDG_CONFIG_HOME "nvim" } else { "$env:LOCALAPPDATA\nvim" }
 
+function Invoke-Checked {
+    param([string]$Description)
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Description failed with exit code $LASTEXITCODE"
+    }
+}
+
 function Show-Help {
     Get-Help $PSCommandPath -Full
 }
@@ -64,7 +71,7 @@ function Install-Prerequisite {
     $installExit = $LASTEXITCODE
 
     if ($installExit -ne 0) {
-        $listResult = & winget list --id $Id --source winget 2>$null
+        $listResult = & winget list --id $Id 2>$null
         if ($LASTEXITCODE -ne 0 -or -not ($listResult -match [regex]::Escape($Id))) {
             throw "winget install of $Id failed (exit $installExit) and it is not already installed."
         }
@@ -89,10 +96,16 @@ function Deploy-Config {
     param([string]$RepoUrl, [string]$TargetDir)
 
     if (Test-Path (Join-Path $TargetDir ".git")) {
-        $currentOrigin = (git -C $TargetDir remote get-url origin 2>$null)
+        $currentOrigin = $null
+        try {
+            $currentOrigin = (git -C $TargetDir remote get-url origin 2>$null)
+        } catch {
+            $currentOrigin = $null
+        }
         if ($currentOrigin -eq $RepoUrl) {
             Write-Host "==> Existing config at $TargetDir already tracks $RepoUrl, pulling latest..."
             git -C $TargetDir pull
+            Invoke-Checked "git pull"
             return
         }
     }
@@ -105,15 +118,19 @@ function Deploy-Config {
 
     Write-Host "==> Cloning $RepoUrl into $TargetDir"
     git clone $RepoUrl $TargetDir
+    Invoke-Checked "git clone"
 }
 
 function Sync-Plugins {
     Write-Host "==> Syncing plugins..."
     nvim --headless "+Lazy! sync" +qa
+    Invoke-Checked "nvim Lazy sync"
     Write-Host "==> Installing Roslyn via Mason..."
     nvim --headless -c "MasonInstall roslyn" -c "qa"
+    Invoke-Checked "nvim MasonInstall roslyn"
     Write-Host "==> Installing C# treesitter parser..."
     nvim --headless -c "lua require('nvim-treesitter').install({'c_sharp'}):wait(300000)" -c "qa"
+    Invoke-Checked "nvim treesitter install c_sharp"
 }
 
 function Main {
