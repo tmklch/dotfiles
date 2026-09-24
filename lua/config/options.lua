@@ -11,6 +11,7 @@ opt.ignorecase = true
 opt.smartcase = true
 opt.signcolumn = "yes"
 opt.updatetime = 250
+opt.timeoutlen = 300
 opt.termguicolors = true
 opt.scrolloff = 8
 opt.splitright = true
