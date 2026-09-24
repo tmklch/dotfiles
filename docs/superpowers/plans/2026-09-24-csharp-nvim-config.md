@@ -11,6 +11,7 @@
 ## Global Constraints
 
 - Neovim >= 0.12.0 required by `roslyn.nvim`; `extra/neovim` on this machine provides 0.12.5 — satisfied.
+- `tree-sitter-cli` (>= 0.26.1) is required by `nvim-treesitter`'s `main` branch to compile parsers (discovered during Task 4 — the original prerequisite list missed this since it's a rewrite-specific requirement). Install via `sudo pacman -S tree-sitter-cli`.
 - .NET SDK required with `dotnet` on `$PATH`; `extra/dotnet-sdk` provides 10.0.12 — satisfied.
 - Leader key is the spacebar: `vim.g.mapleader = " "`, set at the very top of `init.lua`, before the `lazy.nvim` bootstrap runs.
 - Colorscheme is `sainnhe/everforest` with `vim.g.everforest_background = "hard"`, dark mode, italics enabled. This is a static choice — explicitly **not** coupled to Noctalia/matugen live theme generation.
@@ -34,8 +35,10 @@
 - [ ] **Step 1: Install packages**
 
 ```bash
-sudo pacman -S --needed neovim dotnet-sdk git ripgrep fd unzip
+sudo pacman -S --needed neovim dotnet-sdk git ripgrep fd unzip tree-sitter-cli
 ```
+
+(`tree-sitter-cli` was added after Task 4 discovered nvim-treesitter's rewrite requires it to compile parsers — see Global Constraints.)
 
 - [ ] **Step 2: Verify each binary and version**
 
