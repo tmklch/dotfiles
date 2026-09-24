@@ -53,8 +53,36 @@ function Update-EnvPath {
     $env:Path = "$machinePath;$userPath"
 }
 
+function Install-Prerequisite {
+    param(
+        [string]$Id,
+        [string[]]$ExtraArgs = @()
+    )
+    Write-Host "==> Installing $Id via winget..."
+    $installArgs = @("install", "--id", $Id, "-e", "--source", "winget", "--accept-package-agreements", "--accept-source-agreements") + $ExtraArgs
+    & winget @installArgs
+    $installExit = $LASTEXITCODE
+
+    if ($installExit -ne 0) {
+        $listResult = & winget list --id $Id --source winget 2>$null
+        if ($LASTEXITCODE -ne 0 -or -not ($listResult -match [regex]::Escape($Id))) {
+            throw "winget install of $Id failed (exit $installExit) and it is not already installed."
+        }
+        Write-Host "==> $Id is already installed, continuing."
+    }
+}
+
 function Install-Prerequisites {
-    throw "Install-Prerequisites not yet implemented"
+    Install-Prerequisite -Id "Neovim.Neovim"
+    Install-Prerequisite -Id "Microsoft.DotNet.SDK.10"
+    Install-Prerequisite -Id "Git.Git"
+    Install-Prerequisite -Id "BurntSushi.ripgrep.MSVC"
+    Install-Prerequisite -Id "sharkdp.fd"
+    Install-Prerequisite -Id "tree-sitter.tree-sitter-cli"
+    Install-Prerequisite -Id "Kitware.CMake"
+    Install-Prerequisite -Id "Microsoft.VisualStudio.2022.BuildTools" -ExtraArgs @(
+        "--override", "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+    )
 }
 
 function Deploy-Config {
