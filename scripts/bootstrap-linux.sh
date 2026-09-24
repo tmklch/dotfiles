@@ -75,7 +75,7 @@ install_nvim_from_github() {
 ensure_nvim_min_version() {
   local bin_dir="${1:-$LOCAL_BIN}"
   local version major minor
-  version="$(nvim --version | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "0.0.0")"
+  version="$(nvim --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "0.0.0")"
   major="$(echo "$version" | cut -d. -f1)"
   minor="$(echo "$version" | cut -d. -f2)"
   if (( major == 0 && minor < 12 )); then
@@ -89,7 +89,7 @@ install_tree_sitter_cli_from_github() {
   echo "==> Installing tree-sitter-cli from GitHub release into $bin_dir..."
   mkdir -p "$bin_dir"
   local tmp_zip
-  tmp_zip="$(mktemp).zip"
+  tmp_zip="$(mktemp --suffix=.zip)"
   curl -fsSL "https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-cli-linux-x64.zip" -o "$tmp_zip"
   unzip -o "$tmp_zip" -d "$bin_dir"
   rm -f "$tmp_zip"
@@ -98,11 +98,12 @@ install_tree_sitter_cli_from_github() {
 
 ensure_tree_sitter_cli_min_version() {
   local bin_dir="${1:-$LOCAL_BIN}"
-  local version major minor
+  local version major minor patch
   version="$(tree-sitter --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "0.0.0")"
   major="$(echo "$version" | cut -d. -f1)"
   minor="$(echo "$version" | cut -d. -f2)"
-  if (( major == 0 && minor < 26 )); then
+  patch="$(echo "$version" | cut -d. -f3)"
+  if (( major == 0 && (minor < 26 || (minor == 26 && patch < 1)) )); then
     echo "==> System tree-sitter-cli ($version) is older than 0.26.1, installing from GitHub instead"
     install_tree_sitter_cli_from_github "$bin_dir"
   fi
@@ -150,7 +151,7 @@ install_arch() {
 
 install_fedora() {
   echo "==> Installing prerequisites via dnf..."
-  sudo dnf install -y neovim git ripgrep fd-find unzip dotnet-sdk-10.0 tree-sitter-cli
+  sudo dnf install -y neovim git ripgrep fd-find unzip dotnet-sdk-10.0 tree-sitter-cli curl
   sudo dnf group install -y "Development Tools" || sudo dnf install -y @development-tools
 
   ensure_nvim_min_version
@@ -160,7 +161,7 @@ install_fedora() {
 install_debian() {
   echo "==> Installing prerequisites via apt..."
   sudo apt-get update
-  sudo apt-get install -y git ripgrep fd-find unzip build-essential
+  sudo apt-get install -y git ripgrep fd-find unzip build-essential curl ca-certificates
 
   mkdir -p "$LOCAL_BIN"
   if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
@@ -190,12 +191,23 @@ main() {
     exit 0
   fi
 
+  if [[ "${1:-}" == -* && "${1:-}" != "-h" && "${1:-}" != "--help" ]]; then
+    echo "ERROR: unknown option: $1" >&2
+    print_help
+    exit 1
+  fi
+
   local repo_url
   repo_url="$(resolve_repo_url "${1:-}")"
   if [[ -z "$repo_url" ]]; then
     echo "ERROR: No config repo URL given. Pass it as an argument, set NVIM_CONFIG_REPO, or edit NVIM_CONFIG_REPO_DEFAULT in this script." >&2
     print_help
     exit 1
+  fi
+
+  export PATH="$LOCAL_BIN:$PATH"
+  if ! grep -q '.local/bin' "$HOME/.bashrc" 2>/dev/null; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
   fi
 
   local distro
@@ -209,8 +221,6 @@ main() {
       exit 1
       ;;
   esac
-
-  export PATH="$LOCAL_BIN:$PATH"
 
   deploy_config "$repo_url"
   sync_plugins
