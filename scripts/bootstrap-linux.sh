@@ -158,8 +158,30 @@ install_fedora() {
 }
 
 install_debian() {
-  echo "ERROR: install_debian not yet implemented" >&2
-  exit 1
+  echo "==> Installing prerequisites via apt..."
+  sudo apt-get update
+  sudo apt-get install -y git ripgrep fd-find unzip build-essential
+
+  mkdir -p "$LOCAL_BIN"
+  if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
+    ln -sf "$(command -v fdfind)" "$LOCAL_BIN/fd"
+  fi
+
+  if ! sudo apt-get install -y dotnet-sdk-10.0; then
+    echo "==> apt's dotnet-sdk-10.0 unavailable, falling back to dotnet-install.sh"
+    local tmp_installer
+    tmp_installer="$(mktemp)"
+    curl -fsSL https://dot.net/v1/dotnet-install.sh -o "$tmp_installer"
+    bash "$tmp_installer" --channel 10.0 --install-dir "$HOME/.dotnet"
+    rm -f "$tmp_installer"
+    export PATH="$HOME/.dotnet:$PATH"
+    if ! grep -q '.dotnet' "$HOME/.bashrc" 2>/dev/null; then
+      echo 'export PATH="$HOME/.dotnet:$PATH"' >> "$HOME/.bashrc"
+    fi
+  fi
+
+  install_nvim_from_github
+  install_tree_sitter_cli_from_github
 }
 
 main() {
