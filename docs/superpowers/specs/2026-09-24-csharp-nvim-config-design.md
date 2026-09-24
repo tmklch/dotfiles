@@ -84,6 +84,8 @@ Nerd Font presence in the terminal is a nice-to-have for plugin icons (nvim-tree
 
 ## 7. Keymaps
 
+`<leader>` is the spacebar: `vim.g.mapleader = " "` set at the very top of `init.lua`, before the `lazy.nvim` bootstrap runs (lazy.nvim reads `mapleader` at setup time, so this must come first or plugin-defined `<leader>` mappings register against the wrong key).
+
 Set on `LspAttach` (only active in buffers with a running LSP):
 
 | Key | Action |
