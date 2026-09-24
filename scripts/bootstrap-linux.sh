@@ -149,8 +149,12 @@ install_arch() {
 }
 
 install_fedora() {
-  echo "ERROR: install_fedora not yet implemented" >&2
-  exit 1
+  echo "==> Installing prerequisites via dnf..."
+  sudo dnf install -y neovim git ripgrep fd-find unzip dotnet-sdk-10.0 tree-sitter-cli
+  sudo dnf group install -y "Development Tools" || sudo dnf install -y @development-tools
+
+  ensure_nvim_min_version
+  ensure_tree_sitter_cli_min_version
 }
 
 install_debian() {
