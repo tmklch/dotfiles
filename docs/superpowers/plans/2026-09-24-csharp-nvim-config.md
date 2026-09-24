@@ -230,34 +230,48 @@ git commit -m "Add everforest colorscheme"
 - Consumes: `lua/plugins/` auto-import from Task 2.
 - Produces: Treesitter syntax highlighting/indent active for `c_sharp`, `lua`, `vim`, `vimdoc`, `bash`, `json`, `markdown`, `yaml`. No function-level interface consumed by later tasks.
 
+**Correction (2026-09-24):** the plan originally specified nvim-treesitter's old `nvim-treesitter.configs` API. That API no longer exists — `nvim-treesitter`'s `main` branch (required for Neovim >= 0.12; the old `master` branch is frozen and caps at Neovim 0.11) is a full, incompatible rewrite. Verified against the live README on 2026-09-24. The content below reflects the current API.
+
 - [ ] **Step 1: Write `lua/plugins/treesitter.lua`**
 
 ```lua
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = { "c_sharp", "lua", "vim", "vimdoc", "bash", "json", "markdown", "yaml" },
-        auto_install = true,
-        highlight = { enable = true },
-        indent = { enable = true },
+      require("nvim-treesitter").setup({
+        install_dir = vim.fn.stdpath("data") .. "/site",
+      })
+      require("nvim-treesitter").install({
+        "c_sharp", "lua", "vim", "vimdoc", "bash", "json", "markdown", "yaml",
+      })
+
+      -- main-branch rewrite: highlighting/indent are enabled per-filetype,
+      -- not via a setup() table. Note pattern uses Neovim filetype names
+      -- (e.g. "cs", "help", "sh"), not treesitter parser names (e.g. "c_sharp", "vimdoc", "bash").
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "cs", "lua", "vim", "help", "sh", "json", "markdown", "yaml" },
+        callback = function()
+          vim.treesitter.start()
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
       })
     end,
   },
 }
 ```
 
-- [ ] **Step 2: Sync plugins, force-install the C# parser, and verify**
+- [ ] **Step 2: Sync plugins, force-install the C# parser synchronously, and verify**
 
 ```bash
 nvim --headless "+Lazy! sync" +qa 2>&1
-nvim --headless -c "TSInstallSync c_sharp" -c "qa" 2>&1
-nvim --headless -c "lua print(require('nvim-treesitter.parsers').has_parser('c_sharp'))" -c "qa" 2>&1
+nvim --headless -c "lua require('nvim-treesitter').install({'c_sharp'}):wait(300000)" -c "qa" 2>&1
+ls ~/.local/share/nvim/site/parser/ | grep -i c_sharp
 ```
 
-Expected: the last command prints `true`.
+Expected: the sync log shows `nvim-treesitter` installed with no errors; the `:wait(300000)` call blocks (up to 5 minutes) until the parser is compiled; the final `ls` prints a `c_sharp.so` file.
 
 - [ ] **Step 3: Commit**
 
