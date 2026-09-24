@@ -324,11 +324,11 @@ return {
 
 ```bash
 nvim --headless "+Lazy! sync" +qa 2>&1
-nvim --headless -c "lua print(vim.fn.exists(':Telescope'))" -c "qa" 2>&1
+nvim --headless -c "lua require('lazy').load({plugins = {'telescope.nvim'}})" -c "lua print(vim.fn.exists(':Telescope'))" -c "qa" 2>&1
 nvim --headless -c "lua require('lazy').load({plugins = {'telescope.nvim'}})" -c "lua print(require('telescope').extensions.fzf ~= nil)" -c "qa" 2>&1
 ```
 
-Expected: first check prints `2` (command exists); second prints `true` (fzf extension loaded — this forces the lazy-loaded plugin to load synchronously since it's normally deferred until a keymap is pressed).
+**Correction (2026-09-24):** the plugin is lazy-loaded via `keys` only (no `cmd`), so lazy.nvim does not stub the `:Telescope` command ahead of time — checking `vim.fn.exists(':Telescope')` *without* forcing a load first returns `0`, not `2`. Both checks above force the load first (`require('lazy').load(...)`), matching how the plugin actually behaves once a keymap is pressed. Expected: first check prints `2`, second prints `true`.
 
 - [ ] **Step 3: Commit**
 
