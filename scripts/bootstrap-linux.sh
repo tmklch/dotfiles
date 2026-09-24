@@ -143,8 +143,9 @@ sync_plugins() {
 }
 
 install_arch() {
-  echo "ERROR: install_arch not yet implemented" >&2
-  exit 1
+  echo "==> Installing prerequisites via pacman..."
+  sudo pacman -S --needed --noconfirm \
+    neovim dotnet-sdk git ripgrep fd unzip tree-sitter-cli base-devel
 }
 
 install_fedora() {
