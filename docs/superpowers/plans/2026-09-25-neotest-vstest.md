@@ -11,6 +11,7 @@
 ## Global Constraints
 
 - `neotest-vstest` is configured via `vim.g.neotest_vstest`, not a `setup()`/opts call — this is how the plugin itself expects to be configured.
+- The `neotest` plugin spec must call `require("neotest-vstest")` inside a `config = function() ... end`, never inside an `opts = {...}` table — lazy.nvim evaluates `opts` tables while parsing specs, before newly-added plugins are downloaded, so a bare `require()` there fails with "module not found" on the very first sync. `config` functions only run after the plugin and its dependencies are installed and loaded.
 - `dap.adapters.netcoredbg.command` must be the bare string `"netcoredbg"` (no hardcoded path) — Mason prepends `mason/bin` to `$PATH`, so the binary resolves from there.
 - Do not touch the existing `<leader>t` "Toggle" group or `<leader>th` keymap — per explicit user decision, test keymaps live under a new `<leader>n` group instead.
 - New plugin files go in `lua/plugins/` (auto-imported via `{ import = "plugins" }` in `lua/config/lazy.lua` — no manual registration needed).
@@ -44,11 +45,13 @@ return {
       "nvim-treesitter/nvim-treesitter",
       "nsidorenco/neotest-vstest",
     },
-    opts = {
-      adapters = {
-        require("neotest-vstest"),
-      },
-    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-vstest"),
+        },
+      })
+    end,
   },
   {
     "mfussenegger/nvim-dap",
