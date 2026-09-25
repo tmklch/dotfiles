@@ -139,6 +139,8 @@ sync_plugins() {
   nvim --headless "+Lazy! sync" +qa
   echo "==> Installing Roslyn via Mason..."
   nvim --headless -c "MasonInstall roslyn" -c "qa"
+  echo "==> Installing netcoredbg via Mason..."
+  nvim --headless -c "MasonInstall netcoredbg" -c "qa"
   echo "==> Installing C# treesitter parser..."
   nvim --headless -c "lua require('nvim-treesitter').install({'c_sharp'}):wait(300000)" -c "qa"
 }
