@@ -32,7 +32,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$DefaultRepo = ""  # fill in once the config repo has a remote
+$DefaultRepo = "git@github.com:tmklch/dotfiles.git"
 $ConfigDir = if ($env:XDG_CONFIG_HOME) { Join-Path $env:XDG_CONFIG_HOME "nvim" } else { "$env:LOCALAPPDATA\nvim" }
 
 function Invoke-Checked {

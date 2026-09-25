@@ -7,7 +7,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
-NVIM_CONFIG_REPO_DEFAULT=""   # fill in once the config repo has a remote
+NVIM_CONFIG_REPO_DEFAULT="git@github.com:tmklch/dotfiles.git"
 LOCAL_BIN="${HOME}/.local/bin"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
 
