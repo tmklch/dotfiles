@@ -21,12 +21,43 @@ return {
   },
   {
     "mfussenegger/nvim-dap",
+    dependencies = { "rcarriga/nvim-dap-ui" },
     config = function()
-      require("dap").adapters.netcoredbg = {
+      local dap = require("dap")
+
+      dap.adapters.netcoredbg = {
         type = "executable",
-        command = "netcoredbg",
+        command = vim.fn.stdpath("data") .. "/mason/bin/netcoredbg",
         args = { "--interpreter=vscode" },
       }
+
+      dap.configurations.cs = {
+        {
+          type = "netcoredbg",
+          name = "Launch DLL",
+          request = "launch",
+          program = function()
+            return vim.fn.input("DLL: ", vim.fn.getcwd() .. "/bin/Debug/net10.0/", "file")
+          end,
+        },
+        {
+          type = "netcoredbg",
+          name = "Attach",
+          request = "attach",
+          processId = require("dap.utils").pick_process,
+        },
+      }
+
+      local dapui = require("dapui")
+      dap.listeners.after.event_initialized["dapui_config"] = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated["dapui_config"] = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited["dapui_config"] = function()
+        dapui.close()
+      end
     end,
   },
   {
