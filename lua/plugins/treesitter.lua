@@ -17,9 +17,13 @@ return {
       -- (e.g. "cs", "help", "sh"), not treesitter parser names (e.g. "c_sharp", "vimdoc", "bash").
       vim.api.nvim_create_autocmd("FileType", {
         pattern = { "cs", "lua", "vim", "help", "sh", "json", "markdown", "yaml" },
-        callback = function()
+        callback = function(args)
           pcall(vim.treesitter.start)
-          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          -- c_sharp ships no indents.scm, so its indentexpr never indents;
+          -- cs gets its own indentexpr (see config/cs_indent.lua).
+          if args.match ~= "cs" then
+            vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
         end,
       })
     end,
