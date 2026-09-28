@@ -149,13 +149,15 @@ sync_plugins() {
 
 install_arch() {
   echo "==> Installing prerequisites via pacman..."
+  # aspnet-runtime: csharpier needs Microsoft.AspNetCore.App, which Arch's
+  # dotnet-sdk doesn't pull in.
   sudo pacman -S --needed --noconfirm \
-    neovim dotnet-sdk git ripgrep fd unzip tree-sitter-cli base-devel
+    neovim dotnet-sdk aspnet-runtime git ripgrep fd unzip tree-sitter-cli base-devel
 }
 
 install_fedora() {
   echo "==> Installing prerequisites via dnf..."
-  sudo dnf install -y neovim git ripgrep fd-find unzip dotnet-sdk-10.0 tree-sitter-cli curl
+  sudo dnf install -y neovim git ripgrep fd-find unzip dotnet-sdk-10.0 aspnetcore-runtime-10.0 tree-sitter-cli curl
   sudo dnf group install -y "Development Tools" || sudo dnf install -y @development-tools
 
   ensure_nvim_min_version
@@ -172,7 +174,8 @@ install_debian() {
     ln -sf "$(command -v fdfind)" "$LOCAL_BIN/fd"
   fi
 
-  if ! sudo apt-get install -y dotnet-sdk-10.0; then
+  # The dotnet-install.sh fallback's SDK already bundles the ASP.NET Core runtime.
+  if ! sudo apt-get install -y dotnet-sdk-10.0 aspnetcore-runtime-10.0; then
     echo "==> apt's dotnet-sdk-10.0 unavailable, falling back to dotnet-install.sh"
     local tmp_installer
     tmp_installer="$(mktemp)"
