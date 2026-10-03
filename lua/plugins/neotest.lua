@@ -10,11 +10,16 @@ return {
       "nvim-neotest/nvim-nio",
       "nvim-treesitter/nvim-treesitter",
       "nsidorenco/neotest-vstest",
+      "nvim-neotest/neotest-python",
     },
     config = function()
       require("neotest").setup({
         adapters = {
           require("neotest-vstest"),
+          require("neotest-python")({
+            runner = "pytest",
+            dap = { justMyCode = false },
+          }),
         },
       })
     end,

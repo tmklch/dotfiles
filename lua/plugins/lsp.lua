@@ -66,7 +66,7 @@ return {
     "WhoIsSethDaniel/mason-tool-installer.nvim",
     dependencies = { "mason-org/mason.nvim" },
     opts = {
-      ensure_installed = { "roslyn", "netcoredbg", "csharpier" },
+      ensure_installed = { "roslyn", "netcoredbg", "csharpier", "basedpyright", "ruff", "debugpy" },
     },
   },
 }

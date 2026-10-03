@@ -83,6 +83,7 @@ function Install-Prerequisites {
     Install-Prerequisite -Id "Neovim.Neovim"
     Install-Prerequisite -Id "Microsoft.DotNet.SDK.10"
     Install-Prerequisite -Id "Git.Git"
+    Install-Prerequisite -Id "Python.Python.3.13"
     Install-Prerequisite -Id "BurntSushi.ripgrep.MSVC"
     Install-Prerequisite -Id "sharkdp.fd"
     Install-Prerequisite -Id "tree-sitter.tree-sitter-cli"
@@ -134,9 +135,12 @@ function Sync-Plugins {
     Write-Host "==> Installing csharpier via Mason..."
     nvim --headless -c "MasonInstall csharpier" -c "qa"
     Invoke-Checked "nvim MasonInstall csharpier"
-    Write-Host "==> Installing C# treesitter parser..."
-    nvim --headless -c "lua require('nvim-treesitter').install({'c_sharp'}):wait(300000)" -c "qa"
-    Invoke-Checked "nvim treesitter install c_sharp"
+    Write-Host "==> Installing basedpyright, ruff and debugpy via Mason..."
+    nvim --headless -c "MasonInstall basedpyright ruff debugpy" -c "qa"
+    Invoke-Checked "nvim MasonInstall basedpyright ruff debugpy"
+    Write-Host "==> Installing C# and Python treesitter parsers..."
+    nvim --headless -c "lua require('nvim-treesitter').install({'c_sharp', 'python'}):wait(300000)" -c "qa"
+    Invoke-Checked "nvim treesitter install c_sharp python"
 }
 
 function Main {
