@@ -145,8 +145,10 @@ sync_plugins() {
   nvim --headless -c "MasonInstall csharpier" -c "qa"
   echo "==> Installing basedpyright, ruff and debugpy via Mason..."
   nvim --headless -c "MasonInstall basedpyright ruff debugpy" -c "qa"
-  echo "==> Installing C# and Python treesitter parsers..."
-  nvim --headless -c "lua require('nvim-treesitter').install({'c_sharp', 'python'}):wait(300000)" -c "qa"
+  echo "==> Installing vtsls, eslint-lsp, prettierd and js-debug-adapter via Mason..."
+  nvim --headless -c "MasonInstall vtsls eslint-lsp prettierd js-debug-adapter" -c "qa"
+  echo "==> Installing C#, Python and TypeScript treesitter parsers..."
+  nvim --headless -c "lua require('nvim-treesitter').install({'c_sharp', 'python', 'typescript', 'tsx', 'javascript'}):wait(300000)" -c "qa"
 }
 
 install_arch() {
@@ -154,12 +156,12 @@ install_arch() {
   # aspnet-runtime: csharpier needs Microsoft.AspNetCore.App, which Arch's
   # dotnet-sdk doesn't pull in.
   sudo pacman -S --needed --noconfirm \
-    neovim dotnet-sdk aspnet-runtime python git ripgrep fd unzip tree-sitter-cli base-devel
+    neovim dotnet-sdk aspnet-runtime python nodejs npm git ripgrep fd unzip tree-sitter-cli base-devel
 }
 
 install_fedora() {
   echo "==> Installing prerequisites via dnf..."
-  sudo dnf install -y neovim python3 git ripgrep fd-find unzip dotnet-sdk-10.0 aspnetcore-runtime-10.0 tree-sitter-cli curl
+  sudo dnf install -y neovim python3 nodejs npm git ripgrep fd-find unzip dotnet-sdk-10.0 aspnetcore-runtime-10.0 tree-sitter-cli curl
   sudo dnf group install -y "Development Tools" || sudo dnf install -y @development-tools
 
   ensure_nvim_min_version
@@ -169,7 +171,7 @@ install_fedora() {
 install_debian() {
   echo "==> Installing prerequisites via apt..."
   sudo apt-get update
-  sudo apt-get install -y python3 python3-venv git ripgrep fd-find unzip build-essential curl ca-certificates
+  sudo apt-get install -y python3 python3-venv nodejs npm git ripgrep fd-find unzip build-essential curl ca-certificates
 
   mkdir -p "$LOCAL_BIN"
   if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then

@@ -7,6 +7,10 @@ return {
       formatters_by_ft = {
         cs = { "csharpier" },
         python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
+        typescript = { "prettierd" },
+        typescriptreact = { "prettierd" },
+        javascript = { "prettierd" },
+        javascriptreact = { "prettierd" },
       },
       format_on_save = {
         timeout_ms = 500,

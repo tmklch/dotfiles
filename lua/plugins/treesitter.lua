@@ -9,14 +9,18 @@ return {
         install_dir = vim.fn.stdpath("data") .. "/site",
       })
       require("nvim-treesitter").install({
-        "c_sharp", "python", "lua", "vim", "vimdoc", "bash", "json", "markdown", "yaml",
+        "c_sharp", "python", "typescript", "tsx", "javascript",
+        "lua", "vim", "vimdoc", "bash", "json", "markdown", "yaml",
       })
 
       -- main-branch rewrite: highlighting/indent are enabled per-filetype,
       -- not via a setup() table. Note pattern uses Neovim filetype names
       -- (e.g. "cs", "help", "sh"), not treesitter parser names (e.g. "c_sharp", "vimdoc", "bash").
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "cs", "python", "lua", "vim", "help", "sh", "json", "markdown", "yaml" },
+        pattern = {
+          "cs", "python", "typescript", "typescriptreact", "javascript", "javascriptreact",
+          "lua", "vim", "help", "sh", "json", "markdown", "yaml",
+        },
         callback = function(args)
           pcall(vim.treesitter.start)
           -- c_sharp ships no indents.scm, so its indentexpr never indents;
